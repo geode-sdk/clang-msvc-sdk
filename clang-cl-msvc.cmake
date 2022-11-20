@@ -23,6 +23,8 @@ macro(cmake_getconf VAR)
     else()
       message(FATAL_ERROR "Cannot determine \"${VAR}\"")
     endif()
+  else()
+    set(ENV{${VAR}} "${${VAR}}")
   endif()
 endmacro()
 
@@ -79,6 +81,7 @@ cmake_getconf(WINSDK_BASE)
 cmake_getconf(WINSDK_VER)
 cmake_getconf(LLVM_VER)
 cmake_getconf(CLANG_VER)
+cmake_getconf(LLVM_PATH)
 
 if(LLVM_VER STREQUAL "")
   set(LLVM_VER 11)
@@ -138,50 +141,50 @@ if(NOT EXISTS "${WINSDK_INCLUDE}/um/WINDOWS.H")
 endif()
 
 # Attempt to find the clang-cl binary
-find_program(CLANG_CL_PATH NAMES clang-cl-${CLANG_VER} clang-cl)
+find_program(CLANG_CL_PATH NAMES clang-cl-${CLANG_VER} clang-cl PATHS ${LLVM_PATH})
 if(${CLANG_CL_PATH} STREQUAL "CLANG_CL_PATH-NOTFOUND")
   message(SEND_ERROR "Unable to find clang-cl-${CLANG_VER}")
 endif()
 
 # Attempt to find the llvm-link binary
-find_program(LLD_LINK_PATH NAMES lld-link-${LLVM_VER} lld-link)
+find_program(LLD_LINK_PATH NAMES lld-link-${LLVM_VER} lld-link PATHS ${LLVM_PATH})
 if(${LLD_LINK_PATH} STREQUAL "LLD_LINK_PATH-NOTFOUND")
   message(SEND_ERROR "Unable to find lld-link-${LLVM_VER}")
 endif()
 
 # Attempt to find the lld-lib binary
-find_program(LLVM_LIB_PATH NAMES llvm-lib-${LLVM_VER} llvm-lib)
+find_program(LLVM_LIB_PATH NAMES llvm-lib-${LLVM_VER} llvm-lib PATHS ${LLVM_PATH})
 if(${LLVM_LIB_PATH} STREQUAL "LLVM_LIB_PATH-NOTFOUND")
   message(SEND_ERROR "Unable to find llvm-lib-${LLVM_VER}")
 endif()
 
 # Attempt to find the llvm-nm binary
-find_program(LLVM_NM_PATH NAMES llvm-nm-${LLVM_VER} llvm-nm)
+find_program(LLVM_NM_PATH NAMES llvm-nm-${LLVM_VER} llvm-nm PATHS ${LLVM_PATH})
 if(${LLVM_NM_PATH} STREQUAL "LLVM_NM_PATH-NOTFOUND")
   message(SEND_ERROR "Unable to find llvm-nm-${LLVM_VER}")
 endif()
 
 # Attempt to find the llvm-mt binary
-find_program(LLVM_MT_PATH NAMES llvm-mt-${LLVM_VER} llvm-mt)
+find_program(LLVM_MT_PATH NAMES llvm-mt-${LLVM_VER} llvm-mt PATHS ${LLVM_PATH})
 #set(LLVM_MT_PATH "${CMAKE_CURRENT_LIST_DIR}/llvm-mt-wrapper")
 if(${LLVM_MT_PATH} STREQUAL "LLVM_MT_PATH-NOTFOUND")
   message(SEND_ERROR "Unable to find llvm-mt-${LLVM_VER}")
 endif()
 
 # Attempt to find the native clang binary
-find_program(CLANG_C_PATH NAMES clang-${CLANG_VER} clang)
+find_program(CLANG_C_PATH NAMES clang-${CLANG_VER} clang PATHS ${LLVM_PATH})
 if(${CLANG_C_PATH} STREQUAL "CLANG_C_PATH-NOTFOUND")
   message(SEND_ERROR "Unable to find clang-${CLANG_VER}")
 endif()
 
 # Attempt to find the native clang++ binary
-find_program(CLANG_CXX_PATH NAMES clang++-${CLANG_VER} clang++)
+find_program(CLANG_CXX_PATH NAMES clang++-${CLANG_VER} clang++ PATHS ${LLVM_PATH})
 if(${CLANG_CXX_PATH} STREQUAL "CLANG_CXX_PATH-NOTFOUND")
   message(SEND_ERROR "Unable to find clang++-${CLANG_VER}")
 endif()
 
 # Attempt to find the llvm-rc binary
-find_program(LLVM_RC_PATH NAMES llvm-rc-${LLVM_VER} llvm-rc)
+find_program(LLVM_RC_PATH NAMES llvm-rc-${LLVM_VER} llvm-rc PATHS ${LLVM_PATH})
 if(${LLVM_RC_PATH} STREQUAL "LLVM_RC_PATH-NOTFOUND")
   message(SEND_ERROR "Unable to find rc")
 endif()
@@ -218,7 +221,7 @@ set(COMPILE_FLAGS
     -imsvc "${WINSDK_INCLUDE}/um"
     -imsvc "${WINSDK_INCLUDE}/winrt")
     
-link_libraries(user32 kernel32)
+link_libraries(user32 kernel32 shell32 ole32)
 
 if(case_sensitive_filesystem)
   # Ensure all sub-configures use the top-level VFS overlay instead of generating their own.
