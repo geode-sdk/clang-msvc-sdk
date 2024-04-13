@@ -212,7 +212,7 @@ set(COMPILE_FLAGS
     -imsvc "${WINSDK_INCLUDE}/um"
     -imsvc "${WINSDK_INCLUDE}/winrt")
     
-link_libraries(user32 kernel32 shell32 ole32 crypt32 advapi32 delayimp)
+link_libraries(user32 kernel32 shell32 ole32 crypt32 advapi32 delayimp gdi32)
 
 if(case_sensitive_filesystem)
   # Ensure all sub-configures use the top-level VFS overlay instead of generating their own.
