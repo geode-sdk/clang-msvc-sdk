@@ -194,12 +194,22 @@ list(APPEND _CTF_NATIVE_DEFAULT "-DCMAKE_CXX_COMPILER=${CLANG_CXX_PATH}")
 
 set(CROSS_TOOLCHAIN_FLAGS_NATIVE "${_CTF_NATIVE_DEFAULT}" CACHE STRING "")
 
+cmake_path(GET CLANG_C_PATH PARENT_PATH LLVM_BIN_DIR)
+
+execute_process(COMMAND ${CMAKE_CXX_COMPILER} --version OUTPUT_VARIABLE CLANG_VERSION_OUTPUT)
+string(REGEX MATCH "[0-9]+\\.[0-9]+\\.[0-9]+" CLANG_FULL_VERSION ${CLANG_VERSION_OUTPUT})
+string(REGEX REPLACE "([0-9]+)\\..*" "\\1" CLANG_MAJOR_VERSION ${CLANG_FULL_VERSION})
+
+message(STATUS "LLVM major version: ${CLANG_MAJOR_VERSION}")
+
 set(COMPILE_FLAGS
     -fexceptions -fcxx-exceptions
     -D_CRT_SECURE_NO_WARNINGS
     --target=${TRIPLE_ARCH}-windows-msvc
     -fms-compatibility-version=19.37
     -Wno-unused-command-line-argument # Needed to accept projects pushing both -Werror and /MP
+    # following line is to make SIMD intrinsics work with clang (clang-cl works fine without this)
+    -isystem "${LLVM_BIN_DIR}/../lib/clang/${CLANG_MAJOR_VERSION}/include"
     -isystem"${MSVC_INCLUDE}"
     -isystem"${WINSDK_INCLUDE}/ucrt"
     -isystem"${WINSDK_INCLUDE}/shared"
