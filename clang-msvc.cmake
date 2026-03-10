@@ -201,11 +201,16 @@ string(REGEX REPLACE "([0-9]+)\\..*" "\\1" CLANG_MAJOR_VERSION ${CLANG_FULL_VERS
 
 message(STATUS "LLVM major version: ${CLANG_MAJOR_VERSION}")
 
-execute_process(
-    COMMAND ${CMAKE_CXX_COMPILER} -print-resource-dir
-    OUTPUT_VARIABLE CLANG_RESOURCE_DIR
-    OUTPUT_STRIP_TRAILING_WHITESPACE
-)
+# Prefer an explicit env-var override (specifically for nix development environments)
+if(DEFINED ENV{CLANG_RESOURCE_DIR} AND NOT "$ENV{CLANG_RESOURCE_DIR}" STREQUAL "")
+    set(CLANG_RESOURCE_DIR "$ENV{CLANG_RESOURCE_DIR}")
+else()
+    execute_process(
+        COMMAND ${CMAKE_CXX_COMPILER} -print-resource-dir
+        OUTPUT_VARIABLE CLANG_RESOURCE_DIR
+        OUTPUT_STRIP_TRAILING_WHITESPACE
+    )
+endif()
 
 if(NOT CLANG_RESOURCE_DIR)
     message(FATAL_ERROR "Failed to determine clang resource directory")
